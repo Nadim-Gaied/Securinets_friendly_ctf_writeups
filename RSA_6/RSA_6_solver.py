@@ -1,0 +1,77 @@
+from Crypto.Util.number import long_to_bytes
+from gmpy2 import iroot
+
+n = 87454848059498167921240922949118611401580991523353039384024368639533400690678273260151841704103354330806353894303501693442640852763270718036587840374320646033408714630064663735039789258347217263924196417232478497233780566089079411361296870968849569393547722527737292459255792435464748116215482008992219091077342191143566812459679239663661677996553464412706439478849155053794784755481934215864688060785246026196260578596201295540985944187434849747984173187207178672609558457634549846369936804365039935695653170531911101775097483830562347642607661953415830257891066259761501089629923103741491772854584849828135807552020047361114585537
+e = 17
+ciphertext = 66391356207440327306352664004750580029512666955614996045397387493931423253139409376081105336558893109762068640874114292829002838170086882848183550454151688496456858835554269686138073056296762671544472878928103089073617334521010895359611807068638059445837542695289356008851403283846063387996401031241499671994329063773271982813628844647369108531173785089641934619120999076649588683266570543296707794775097241934398122285891907149818666201126889287402376682605246294520534353686598513914058958763430903182873161519004538242261166459309058681143211707176503477292858135244625827549263436020325483729304694599811482914147465513687822274
+
+prefix = b'):'
+#prefix = b'S'
+len_flag = 16
+
+prefix_bits = ''.join(format(byte, '08b') for byte in prefix)
+print(prefix_bits)
+
+prefix_bits_min = int(prefix_bits, 2) << (8 * (len_flag - len(prefix)))
+prefix_bits_max = (int(prefix_bits, 2) + 1) << (8 * (len_flag - len(prefix)))
+
+
+print(bin(prefix_bits_min))
+print(bin(prefix_bits_max))
+
+
+prefix_bits_max = (int(prefix_bits, 2) + 1) << (8 * (len_flag - len(prefix)))
+
+print(prefix_bits_min, prefix_bits_max)
+
+min = prefix_bits_min ** e
+max = prefix_bits_max ** e
+
+print(f"min: {min}")
+print(( min-n ) // n)
+print(f"max: {max}")
+print( (max-min) // n )
+
+start = n << 31
+print(start > min)
+ciphertext += start
+print(ciphertext > min)
+
+print(( min - ciphertext) // n)
+
+diff = (min - ciphertext) // n
+diff = (diff - 1) * n
+ciphertext += diff
+print(( min - ciphertext) // n)
+print(ciphertext > min)
+
+"""diff = (max - ciphertext) // n
+diff = ( diff - 4 ) * n
+ciphertext += diff
+print(ciphertext > min)"""
+
+
+while ciphertext < min:
+    ciphertext += n
+
+ciphertext -= n
+print(ciphertext > min)
+print( (max - ciphertext) // n)
+
+
+counter = 0
+#max  =  2 ** ( (8*16) * 17 )
+
+while ciphertext < max:
+    root , ismultiple = iroot(ciphertext,e)
+    if ismultiple:
+        try:
+            print('Securinets{' + long_to_bytes(root).decode('utf-8')[::-1] + '}')
+            print(f"counter: {counter}")
+        except UnicodeDecodeError:
+            pass
+    ciphertext += n
+    counter+= 1
+print('ended')
+
+#flag : Securinets{L0w_e_large_n_:)}
